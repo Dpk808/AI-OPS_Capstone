@@ -1,56 +1,38 @@
-name: AutoSec-Fix Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-
 jobs:
   security-scan:
-    name: DevSecOps Security Scan & Auto Fix
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2️⃣ Setup Python environment
-      - name: Set up Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # 3️⃣ Upgrade pip and install security tools
-      - name: Install security tools
+      - name: Install Tools
         run: |
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
           pip install bandit pip-audit pyyaml
 
-      # 4️⃣ Prepare directories (CRITICAL FIX)
-      - name: Prepare report directories
-        run: |
-          mkdir -p reports
+      - name: Prepare Reports Directory
+        run: mkdir -p reports
 
-      # 5️⃣ Run static code security scan (Bandit)
-      - name: Run Bandit Scan (Code Misconfiguration)
-        run: |
-          python scanners/bandit_scan.py
+      - name: Run Bandit Scan
+        run: python scanners/bandit_scan.py
 
-      # 6️⃣ Run dependency vulnerability scan
-      - name: Run Dependency Vulnerability Scan
-        run: |
-          python scanners/dependency_scan.py
+      - name: Run Dependency Scan
+        run: python scanners/dependency_scan.py
 
-      # 7️⃣ Generate remediation suggestions
-      - name: Generate Fix Suggestions & Security Report
-        run: |
-          python auto_fixer/fix_engine.py
+      - name: Generate Fix Suggestions and Human-Readable Report
+        run: python auto_fixer/fix_engine.py
 
-      # 8️⃣ Upload security reports (for evaluation & viva)
-      - name: Upload Security Reports
+      - name: Upload Full Security Report
         uses: actions/upload-artifact@v4
         with:
-          name: security-reports
-          path: reports/
+          name: full-security-report
+          path: reports/full_security_report.md
+      - name: Add link to workflow summary
+        run: |
+          echo "## Security Report" >> $GITHUB_STEP_SUMMARY
+          echo "- [Download full report](./reports/full_security_report.md)" >> $GITHUB_STEP_SUMMARY
+
