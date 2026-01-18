@@ -1,0 +1,10 @@
+
+B602:
+  issue: Shell injection via subprocess
+  fix: Use subprocess.run with shell=False
+  example: |
+    subprocess.run(cmd, shell=False, check=True)
+
+CVE-2018-18074:
+  issue: Vulnerable requests version
+  fix: Upgrade requests to >=2.20.0
