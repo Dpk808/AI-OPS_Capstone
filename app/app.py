@@ -14,14 +14,14 @@
 import os, sys
 
 def greet(name):
-  if name:
-     print("Hello, "+name)
-  else:
-   print("Hello, stranger")
+if name:
+print("Hello, "+name)
+else:
+print("Hello, stranger")
 
 def add_numbers(a,b):
-  sum = a+b
-  return sum
+sum = a+b
+return sum
 
 def unsafe_run(cmd):
     import subprocess
