@@ -1,12 +1,15 @@
-
+from pathlib import Path
 import yaml
 import json
-from pathlib import Path
+
+# Ensure reports directory exists
+reports_dir = Path("reports")
+reports_dir.mkdir(parents=True, exist_ok=True)
 
 fixes = yaml.safe_load(open("remediation/fixes.yaml"))
 report = []
 
-bandit_report = Path("reports/bandit.json")
+bandit_report = reports_dir / "bandit.json"
 if bandit_report.exists():
     data = json.load(open(bandit_report))
     for issue in data.get("results", []):
@@ -18,19 +21,24 @@ if bandit_report.exists():
                 "solution": fixes[code]["fix"]
             })
 
-dep_report = Path("reports/deps.txt")
+dep_report = reports_dir / "deps.txt"
 if dep_report.exists():
     for line in dep_report.read_text().splitlines():
         if "CVE" in line:
             report.append({
                 "type": "Dependency",
-                "issue": line,
+                "issue": line.strip(),
                 "solution": "Upgrade to secure version"
             })
 
-Path("reports/security_report.md").write_text(
+# Write final security report
+security_report = reports_dir / "security_report.md"
+security_report.write_text(
     "# Security Report\n\n" +
-    "\n".join(f"- **{r['type']}**: {r['issue']} → {r['solution']}" for r in report)
+    "\n".join(
+        f"- **{r['type']}**: {r['issue']} → {r['solution']}"
+        for r in report
+    )
 )
 
-print("Security report generated")
+print("✅ Security report generated successfully")
