@@ -1,38 +1,58 @@
+name: AutoSec-Fix Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
   security-scan:
+    name: DevSecOps Security Scan & Report
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up Python
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Python
+      - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
+      # 3️⃣ Install security tools
       - name: Install Tools
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install bandit pip-audit pyyaml
 
+      # 4️⃣ Prepare reports directory
       - name: Prepare Reports Directory
         run: mkdir -p reports
 
+      # 5️⃣ Run Bandit scan
       - name: Run Bandit Scan
         run: python scanners/bandit_scan.py
 
+      # 6️⃣ Run dependency scan
       - name: Run Dependency Scan
         run: python scanners/dependency_scan.py
 
+      # 7️⃣ Generate fix suggestions and human-readable report
       - name: Generate Fix Suggestions and Human-Readable Report
         run: python auto_fixer/fix_engine.py
 
+      # 8️⃣ Upload report as artifact
       - name: Upload Full Security Report
         uses: actions/upload-artifact@v4
         with:
           name: full-security-report
           path: reports/full_security_report.md
+
+      # 9️⃣ Add link to workflow summary
       - name: Add link to workflow summary
         run: |
           echo "## Security Report" >> $GITHUB_STEP_SUMMARY
           echo "- [Download full report](./reports/full_security_report.md)" >> $GITHUB_STEP_SUMMARY
-
